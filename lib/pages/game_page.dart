@@ -38,6 +38,7 @@ class _HeroPageState extends State<HeroPage> {
   bool puzzleDone = false;
 
   Offset? startPoint;
+  Offset? currentPoint;
 
   @override
   void initState() {
@@ -142,22 +143,6 @@ class _HeroPageState extends State<HeroPage> {
                                           selectedBox.add('$index1$index2');
                                         }
                                       });
-                                      // print(selectedBox);
-
-                                      print('$index1 $index2');
-
-                                      print(
-                                          'leftT: [$index1 $index2] ${position[index1][index2].leftT!.dx} ${position[index1][index2].leftT!.dy}');
-                                      print(
-                                          'leftB: [$index1 $index2] ${position[index1][index2].leftB!.dx} ${position[index1][index2].leftB!.dy}');
-                                      print(
-                                          'rightT: [$index1 $index2] ${position[index1][index2].rightT!.dx} ${position[index1][index2].rightT!.dy}');
-                                      print(
-                                          'rightB: [$index1 $index2] ${position[index1][index2].rightB!.dx} ${position[index1][index2].rightB!.dy}');
-                                      print(
-                                          'x: [$index1 $index2] ${positionCenter[index1][index2].dx}');
-                                      print(
-                                          'y: [$index1 $index2] ${positionCenter[index1][index2].dy}');
                                     },
                                     child: AspectRatio(
                                       aspectRatio: 1,
@@ -198,23 +183,28 @@ class _HeroPageState extends State<HeroPage> {
                         setState(() {
                           RenderBox renderBox =
                               context.findRenderObject() as RenderBox;
-                          lastUpdateLocation = renderBox.globalToLocal(
-                            Offset(startPoint!.dx, details.localPosition.dy),
+                          currentPoint = renderBox.globalToLocal(
+                            details.localPosition,
                           );
-                          points.add(
-                            DrawingPoints(
-                                points: renderBox.globalToLocal(
-                                  Offset(
-                                    positionCenter[0][0].dx,
-                                    details.localPosition.dy,
+
+                          if(startPoint!.dx+currentPoint!.dy>startPoint!.dy-currentPoint!.dx){
+                            points.add(
+                              DrawingPoints(
+                                  points: renderBox.globalToLocal(
+                                    Offset(
+                                      startPoint!.dx,
+                                      currentPoint!.dx,
+                                    ),
                                   ),
-                                ),
-                                paint: Paint()
-                                  ..strokeCap = StrokeCap.round
-                                  ..isAntiAlias = false
-                                  ..color = selectedColor
-                                  ..strokeWidth = strokeWidth),
-                          );
+                                  paint: Paint()
+                                    ..strokeCap = StrokeCap.round
+                                    ..isAntiAlias = false
+                                    ..color = selectedColor
+                                    ..strokeWidth = strokeWidth),
+                            );
+                          }
+
+
                         });
                       },
                       onPanEnd: (details) {
@@ -224,7 +214,10 @@ class _HeroPageState extends State<HeroPage> {
                           points.add(
                             DrawingPoints(
                               points:
-                                  renderBox.globalToLocal(lastUpdateLocation!),
+                                  renderBox.globalToLocal(Offset(
+                                    startPoint!.dx,
+                                    startPoint!.dy,
+                                  ),),
                               paint: Paint()
                                 ..strokeCap = StrokeCap.round
                                 ..isAntiAlias = false
