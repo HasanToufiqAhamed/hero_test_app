@@ -35,7 +35,7 @@ class _HeroPageState extends State<HeroPage> {
   List<DrawingPoints> points = [];
   Color selectedColor = Colors.black;
   double strokeWidth = 25;
-  bool puzzleDone=false;
+  bool puzzleDone = false;
 
   Offset? startPoint;
 
@@ -56,7 +56,7 @@ class _HeroPageState extends State<HeroPage> {
     double extraHeight = displayH - displayW;
     double puzzleEndH = displayH - MediaQuery.of(context).padding.top;
 
-    if(!puzzleDone){
+    if (!puzzleDone) {
       makePosition(puzzleHW, displayH, displayW, extraHeight);
     }
 
@@ -79,11 +79,31 @@ class _HeroPageState extends State<HeroPage> {
             ),
             Row(
               children: [
-                Container(height: 10, width: displayW/5, color: Colors.red,),
-                Container(height: 10, width: displayW/5, color: Colors.blue,),
-                Container(height: 10, width: displayW/5, color: Colors.black,),
-                Container(height: 10, width: displayW/5, color: Colors.green,),
-                Container(height: 10, width: displayW/5, color: Colors.red,),
+                Container(
+                  height: 10,
+                  width: displayW / 5,
+                  color: Colors.red,
+                ),
+                Container(
+                  height: 10,
+                  width: displayW / 5,
+                  color: Colors.blue,
+                ),
+                Container(
+                  height: 10,
+                  width: displayW / 5,
+                  color: Colors.black,
+                ),
+                Container(
+                  height: 10,
+                  width: displayW / 5,
+                  color: Colors.green,
+                ),
+                Container(
+                  height: 10,
+                  width: displayW / 5,
+                  color: Colors.red,
+                ),
               ],
             ),
             ClipRRect(
@@ -126,23 +146,18 @@ class _HeroPageState extends State<HeroPage> {
 
                                       print('$index1 $index2');
 
-                                      /*print(
-                                          'leftT: ${position[index1][index2].leftT}');
                                       print(
-                                          'rightT: ${position[index1][index2].rightT}');
+                                          'leftT: [$index1 $index2] ${position[index1][index2].leftT!.dx} ${position[index1][index2].leftT!.dy}');
                                       print(
-                                          'rightB: ${position[index1][index2].rightB}');
+                                          'leftB: [$index1 $index2] ${position[index1][index2].leftB!.dx} ${position[index1][index2].leftB!.dy}');
                                       print(
-                                          'leftB: ${position[index1][index2].leftB}');*/
-
-                                      /*print(
-                                          'leftT: [$index1 $index2] ${position[index1][index2].leftT!.dy}');
+                                          'rightT: [$index1 $index2] ${position[index1][index2].rightT!.dx} ${position[index1][index2].rightT!.dy}');
                                       print(
-                                          'leftB: [$index1 $index2] ${position[index1][index2].leftB!.dy}');*/
-
+                                          'rightB: [$index1 $index2] ${position[index1][index2].rightB!.dx} ${position[index1][index2].rightB!.dy}');
                                       print(
-                                          'leftT: [${position.length - 1} 0] ${position[position.length-1][0].leftT!.dy}');
-
+                                          'x: [$index1 $index2] ${positionCenter[index1][index2].dx}');
+                                      print(
+                                          'y: [$index1 $index2] ${positionCenter[index1][index2].dy}');
                                     },
                                     child: AspectRatio(
                                       aspectRatio: 1,
@@ -178,7 +193,7 @@ class _HeroPageState extends State<HeroPage> {
                         ],
                       ),
                     ),
-                    /*GestureDetector(
+                    GestureDetector(
                       onPanUpdate: (details) {
                         setState(() {
                           RenderBox renderBox =
@@ -224,9 +239,6 @@ class _HeroPageState extends State<HeroPage> {
                           RenderBox renderBox =
                               context.findRenderObject() as RenderBox;
 
-                          for(int a=0; a!=position.length; a++){
-
-                          }
 
                           startPoint = renderBox.globalToLocal(
                             details.localPosition,
@@ -239,7 +251,7 @@ class _HeroPageState extends State<HeroPage> {
                           pointsList: points,
                         ),
                       ),
-                    )*/
+                    )
                   ],
                 ),
               ),
@@ -302,15 +314,15 @@ class _HeroPageState extends State<HeroPage> {
     double displayW,
     double ex,
   ) {
-    puzzleDone=true;
+    puzzleDone = true;
     double boxHW = displayW / boxNumber;
     List<Position> position2d = [];
     List<Offset> positionCenter2d = [];
 
     for (int a = 0; a != boxNumber; a++) {
       print(a);
-      position2d.clear();
-      positionCenter2d.clear();
+      position2d = [];
+      positionCenter2d = [];
 
       double x = ex + (boxHW * a);
 
@@ -333,7 +345,17 @@ class _HeroPageState extends State<HeroPage> {
         );
 
         positionCenter2d.add(
-          Offset(((y - w) / 2), ((z - x) / 2)),
+          Offset(
+              (position2d[b].leftT!.dx +
+                      position2d[b].leftB!.dx +
+                      position2d[b].rightT!.dx +
+                      position2d[b].rightB!.dx) /
+                  4,
+              (position2d[b].leftT!.dy +
+                      position2d[b].leftB!.dy +
+                      position2d[b].rightT!.dy +
+                      position2d[b].rightB!.dy) /
+                  4),
         );
       }
 
@@ -343,28 +365,16 @@ class _HeroPageState extends State<HeroPage> {
       });
 
       print(
-          'leftT: [${position.length - 1} 0] ${position[position.length-1][0].leftT!.dy}');
-      /*print(
-          'leftB: [${position.length - 1} 0] ${position[position.length-1][0].leftB!.dy}');*/
-
-      /*print(position2d[0].leftT);
-      print(position2d[0].leftB);
-      print(position2d[0].rightT);
-      print(position2d[0].rightB);
-      print('-');
-      print(position2d[0].leftT);
-      print(position2d[0].leftB);
-      print(position2d[0].rightT);
-      print(position2d[0].rightB);
-      print('-----------');*/
+          'leftT: [${position.length - 1} 0] ${position[position.length - 1][0].leftT!.dy}');
+      print(
+          'leftB: [${position.length - 1} 0] ${position[position.length - 1][0].leftB!.dy}');
     }
   }
 
   void extract() {
-    for(int a=0; a!=position.length; a++){
-      for(int b=0; b!=position[a].length; b++){
-        print(
-            'leftB: [$a $b] ${position[a][b].leftT!.dy}');
+    for (int a = 0; a != position.length; a++) {
+      for (int b = 0; b != position[a].length; b++) {
+        print('leftB: [$a $b] ${position[a][b].leftT!.dy}');
       }
     }
   }
