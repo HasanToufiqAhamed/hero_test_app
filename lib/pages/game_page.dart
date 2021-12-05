@@ -39,6 +39,8 @@ class _HeroPageState extends State<HeroPage> {
 
   Offset? startPoint;
   Offset? currentPoint;
+  Offset? startSquireCenterPoint;
+  Offset? endSquireCenterPoint;
 
   @override
   void initState() {
@@ -187,24 +189,25 @@ class _HeroPageState extends State<HeroPage> {
                             details.localPosition,
                           );
 
-                          if(startPoint!.dx+currentPoint!.dy>startPoint!.dy-currentPoint!.dx){
+                          getCenterPosition(Offset(currentPoint!.dx, currentPoint!.dy+extraHeight), 'update');
+
+                          /*if (startPoint!.dx + currentPoint!.dy >
+                              startPoint!.dy - currentPoint!.dx) {*/
                             points.add(
                               DrawingPoints(
                                   points: renderBox.globalToLocal(
                                     Offset(
-                                      startPoint!.dx,
-                                      currentPoint!.dx,
+                                      endSquireCenterPoint!.dx,
+                                      endSquireCenterPoint!.dy-extraHeight,
                                     ),
                                   ),
                                   paint: Paint()
                                     ..strokeCap = StrokeCap.round
-                                    ..isAntiAlias = false
-                                    ..color = selectedColor
+                                    ..isAntiAlias = true
+                                    ..color = selectedColor.withOpacity(0.2)
                                     ..strokeWidth = strokeWidth),
                             );
-                          }
-
-
+                          // }
                         });
                       },
                       onPanEnd: (details) {
@@ -213,15 +216,16 @@ class _HeroPageState extends State<HeroPage> {
                               context.findRenderObject() as RenderBox;
                           points.add(
                             DrawingPoints(
-                              points:
-                                  renderBox.globalToLocal(Offset(
-                                    startPoint!.dx,
-                                    startPoint!.dy,
-                                  ),),
+                              points: renderBox.globalToLocal(
+                                Offset(
+                                  endSquireCenterPoint!.dx,
+                                  endSquireCenterPoint!.dy-extraHeight,
+                                ),
+                              ),
                               paint: Paint()
                                 ..strokeCap = StrokeCap.round
-                                ..isAntiAlias = false
-                                ..color = selectedColor.withOpacity(0)
+                                ..isAntiAlias = true
+                                ..color = selectedColor.withOpacity(0.2)
                                 ..strokeWidth = 0,
                             ),
                           );
@@ -232,10 +236,10 @@ class _HeroPageState extends State<HeroPage> {
                           RenderBox renderBox =
                               context.findRenderObject() as RenderBox;
 
-
                           startPoint = renderBox.globalToLocal(
                             details.localPosition,
                           );
+                          getCenterPosition(Offset(startPoint!.dx, currentPoint!.dy+extraHeight), 'start');
                         });
                       },
                       child: CustomPaint(
@@ -364,10 +368,28 @@ class _HeroPageState extends State<HeroPage> {
     }
   }
 
-  void extract() {
+  void getCenterPosition(Offset? start, String m) {
     for (int a = 0; a != position.length; a++) {
       for (int b = 0; b != position[a].length; b++) {
-        print('leftB: [$a $b] ${position[a][b].leftT!.dy}');
+        if (position[a][b].leftT!.dx < start!.dx &&
+            position[a][b].leftB!.dx < start.dx &&
+            position[a][b].rightT!.dx > start.dx &&
+            position[a][b].rightB!.dx > start.dx &&
+            position[a][b].leftT!.dy < start.dy &&
+            position[a][b].leftB!.dy > start.dy &&
+            position[a][b].rightT!.dy < start.dy &&
+            position[a][b].rightB!.dy > start.dy) {
+          print('$a $b');
+          setState(() {
+            if(m=='start') {
+              print('start');
+              startSquireCenterPoint=positionCenter[a][b];
+            } else {
+              endSquireCenterPoint=positionCenter[a][b];
+            }
+            print('$a $b');
+          });
+        }
       }
     }
   }
