@@ -34,7 +34,7 @@ class _HeroPageState extends State<HeroPage> {
   List<List<Offset>> positionCenter = [];
   Offset? lastUpdateLocation;
 
-  final List<String> wl = ['morning', 'world', 'fool', 'bar', 'kids', 'dart'];
+  final List<String> wl = ['hello', 'world', 'fool', 'bar', 'kids', 'dart'];
 
   // List<DrawingArea>? points = [];
   List<DrawingPoints> points = [];
@@ -196,20 +196,31 @@ class _HeroPageState extends State<HeroPage> {
                                   currentPoint!.dy + extraHeight),
                               'update');
 
-                          bool goLeft=true;
-                          bool goTop=true;
-                          if(startPoint!.dx  > currentPoint!.dx){
-                            goLeft=true;
+                          bool goLeft = true;
+                          bool goTop = true;
+
+                          if (startPoint!.dx > currentPoint!.dx) {
+                            goLeft = true;
                           } else {
-                            goLeft=false;
+                            goLeft = false;
                           }
-                          if(startPoint!.dy  > currentPoint!.dy){
-                            goTop=true;
+                          if (startPoint!.dy > currentPoint!.dy) {
+                            goTop = true;
                           } else {
-                            goTop=false;
+                            goTop = false;
                           }
 
-                          if (goLeft) {
+                          Offset possibleDiagonalPosition = Offset(
+                            endSquireCenterPoint!.dx -
+                                startPoint!.dx +
+                                startPoint!.dx,
+                            endSquireCenterPoint!.dy -
+                                startPoint!.dy +
+                                startPoint!.dy,
+                          );
+                          print(possibleDiagonalPosition);
+
+                          if (true) {
                             if (aOffset != endSquireCenterPoint &&
                                 !points.contains(DrawingPoints(
                                     points: renderBox.globalToLocal(
