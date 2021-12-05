@@ -2,10 +2,12 @@ import 'dart:ui';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:fullscreen/fullscreen.dart';
+import 'package:hero_test_app/text.dart';
 import 'package:hero_test_app/touch/position.dart';
-import 'package:hero_test_app/widget/chips.dart';
-import 'package:hero_test_app/ws/word_search.dart';
+import 'package:hero_test_app/word_search_package/src/utils.dart';
+import 'package:hero_test_app/word_search_package/word_search.dart';
+
+import '../success_dialogue.dart';
 
 class DrawingArea {
   Offset? point;
@@ -14,18 +16,23 @@ class DrawingArea {
   DrawingArea({this.point, this.areaPaint});
 }
 
-class HeroPage extends StatefulWidget {
-  const HeroPage({Key? key}) : super(key: key);
+class PlayGamePage extends StatefulWidget {
+  int level;
+  bool timeLimit;
+
+  PlayGamePage({
+    required this.level,
+    required this.timeLimit,
+  });
 
   @override
-  _HeroPageState createState() => _HeroPageState();
+  _PlayGamePageState createState() => _PlayGamePageState();
 }
 
-class _HeroPageState extends State<HeroPage> {
+class _PlayGamePageState extends State<PlayGamePage> {
   List<List<String>> modText = [];
   String answer = '';
   int puzzleHW = 5;
-  List<String> selectedBox = [];
   List<String> submittedAnswer = [];
   String newAns = '';
   List<int> correctAnswerList = [];
@@ -34,13 +41,13 @@ class _HeroPageState extends State<HeroPage> {
   List<List<Offset>> positionCenter = [];
   Offset? lastUpdateLocation;
 
-  final List<String> wl = ['hello', 'world', 'fool', 'bar', 'kids', 'dart'];
+  final List<String> wl = [];
 
   // List<DrawingArea>? points = [];
   List<DrawingPoints> points = [];
   List<List<DrawingPoints>> pointsArray = [];
   Color selectedColor = Colors.black;
-  double strokeWidth = 25;
+  double strokeWidth = 40;
   bool puzzleDone = false;
 
   Offset? startPoint;
@@ -53,6 +60,23 @@ class _HeroPageState extends State<HeroPage> {
 
   @override
   void initState() {
+    puzzleHW = widget.level == 1
+        ? 5
+        : widget.level == 2
+            ? 6
+            : widget.level == 3
+                ? 7
+                : widget.level == 4
+                    ? 8
+                    : widget.level == 5
+                        ? 9
+                        : 10;
+    while (wl.length != widget.level * 5) {
+      String element = textList[math.Random().nextInt(textList.length)];
+      if (element.length < puzzleHW-1) {
+        wl.add(element);
+      }
+    }
     super.initState();
     makePuzzle(puzzleHW, wl);
     addItem();
@@ -82,34 +106,71 @@ class _HeroPageState extends State<HeroPage> {
       makePosition(puzzleHW, displayH, displayW, extraHeight);
     }
 
-    GlobalKey key = GlobalKey();
-
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+      appBar: AppBar(
+        backgroundColor: Colors.greenAccent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Row(
           children: [
-            Container(
-              child: Expanded(
-                child: Wrap(
-                  children: items,
-                ),
-              ),
-            ),
-            Spacer(),
-            Text(
-              answer,
-              style: TextStyle(fontSize: 32),
-            ),
+            Text('${wl.length}/${correctAnswerList.length}'),
             Spacer(),
             TextButton(
               onPressed: () {
                 setState(() {
-                  selectedBox.clear();
+                  // reset button todo
                   points.clear();
+                  submittedAnswer.clear();
+                  correctAnswerList.clear();
+                  addItem();
                 });
               },
-              child: Text('reset'),
+              child: Text('reset', style: TextStyle(color: Colors.white),),
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: displayH / 70,
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.black,
+                ),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(15),
+                ),
+              ),
+              child: Text(
+                answer.toUpperCase(),
+                style: TextStyle(fontSize: 32),
+              ),
+            ),
+            SizedBox(
+              height: displayH / 70,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ),
+                  child: Wrap(
+                    children: items,
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              height: 2,
+              color: Colors.black,
+              width: double.maxFinite,
             ),
             ClipRRect(
               child: Container(
@@ -133,46 +194,28 @@ class _HeroPageState extends State<HeroPage> {
                               shrinkWrap: true,
                               itemBuilder: (context, index2) => Row(
                                 children: [
-                                  GestureDetector(
-                                    onPanStart: (a) {
-                                      print('${a.localPosition}');
-                                    },
-                                    onPanUpdate: (a) {
-                                      print('${a.globalPosition}');
-                                    },
-                                    onTap: () {
-                                      setState(() {
-                                        if (!selectedBox
-                                            .contains('$index1$index2')) {
-                                          selectedBox.add('$index1$index2');
-                                        }
-                                      });
-                                    },
-                                    child: AspectRatio(
-                                      aspectRatio: 1,
+                                  AspectRatio(
+                                    aspectRatio: 1,
+                                    child: Container(
                                       child: Container(
-                                        padding: EdgeInsets.all(7),
-                                        child: Container(
-                                          height: double.maxFinite,
-                                          width: double.maxFinite,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                              color: selectedBox.contains(
-                                                      ('$index1$index2'))
-                                                  ? Colors.red.withOpacity(0.6)
-                                                  : Colors.black12,
-                                              borderRadius:
-                                                  BorderRadius.circular(10)),
-                                          child: Text(
-                                            '${modText[index1][index2].toUpperCase()}',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                        height: double.maxFinite,
+                                        width: double.maxFinite,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.black,
+                                            width: 0.5,
                                           ),
                                         ),
-                                        alignment: Alignment.center,
+                                        child: Text(
+                                          '${modText[index1][index2].toUpperCase()}',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
+                                      alignment: Alignment.center,
                                     ),
                                   )
                                 ],
@@ -233,7 +276,8 @@ class _HeroPageState extends State<HeroPage> {
                                       ..strokeCap = StrokeCap.round
                                       ..isAntiAlias = true
                                       ..color = selectedColor.withOpacity(0.35)
-                                      ..strokeWidth = strokeWidth))) {
+                                      ..strokeWidth =
+                                          (displayW / puzzleHW) / 2))) {
                               getSelectedWordPosition(
                                 Offset(
                                   endSquireCenterPoint!.dx,
@@ -253,7 +297,8 @@ class _HeroPageState extends State<HeroPage> {
                                       ..strokeCap = StrokeCap.round
                                       ..isAntiAlias = false
                                       ..color = selectedColor.withOpacity(0.35)
-                                      ..strokeWidth = strokeWidth),
+                                      ..strokeWidth =
+                                          (displayW / puzzleHW) / 2),
                               );
                             }
                           }
@@ -286,6 +331,7 @@ class _HeroPageState extends State<HeroPage> {
                         if (answer != '') {
                           deletePaint(answer.length);
                         }
+                        isEnd();
                       },
                       onPanStart: (details) {
                         setState(() {
@@ -318,6 +364,18 @@ class _HeroPageState extends State<HeroPage> {
     );
   }
 
+  isEnd() {
+    if(wl.length==correctAnswerList.length){
+      showDialog(
+        context: context,
+        builder: (_) => TransactionSuccessfully(
+          context,
+        ),
+        barrierDismissible: false,
+      );
+    }
+  }
+
   void makePuzzle(int i, List<String> puzzleStringList) {
     final WSSettings ws = WSSettings(
       width: i,
@@ -332,6 +390,8 @@ class _HeroPageState extends State<HeroPage> {
     final WordSearch wordSearch = WordSearch();
     final WSNewPuzzle newPuzzle = wordSearch.newPuzzle(puzzleStringList, ws);
 
+    print('${newPuzzle.wordsNotPlaced} error');
+
     if (newPuzzle.errors.isEmpty) {
       print(newPuzzle.toString().replaceAll(' ', ''));
 
@@ -339,19 +399,6 @@ class _HeroPageState extends State<HeroPage> {
 
       setState(() {
         modText = newPuzzle.puzzle!;
-      });
-
-      final WSSolved solved =
-          wordSearch.solvePuzzle(newPuzzle.puzzle!, ['dart', 'word']);
-      solved.found.forEach((element) {
-        print('word: ${element.word}, orientation: ${element.orientation}');
-        print('x:${element.x}, y:${element.y}');
-      });
-
-      // All words that could not be found
-      print('Not found Words!');
-      solved.notFound.forEach((element) {
-        print('word: ${element}');
       });
     } else {
       // Notify the user of the errors
@@ -488,14 +535,14 @@ class _HeroPageState extends State<HeroPage> {
           padding: const EdgeInsets.only(right: 15, bottom: 10),
           child: Container(
             decoration: BoxDecoration(
-                border: Border.all(
-                  color: correctAnswers.contains(a)
-                      ? Colors.black12
-                      : Colors.black,
-                ),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(1000),
-                )),
+              border: Border.all(
+                color:
+                    correctAnswers.contains(a) ? Colors.black12 : Colors.black,
+              ),
+              borderRadius: BorderRadius.all(
+                Radius.circular(1000),
+              ),
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 vertical: 5,
