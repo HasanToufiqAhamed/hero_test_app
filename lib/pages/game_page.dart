@@ -1,9 +1,10 @@
 import 'dart:ui';
 import 'dart:io';
-
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:fullscreen/fullscreen.dart';
 import 'package:hero_test_app/touch/position.dart';
+import 'package:hero_test_app/widget/chips.dart';
 import 'package:hero_test_app/ws/word_search.dart';
 
 class DrawingArea {
@@ -22,17 +23,22 @@ class HeroPage extends StatefulWidget {
 
 class _HeroPageState extends State<HeroPage> {
   List<List<String>> modText = [];
+  String answer = '';
   int puzzleHW = 5;
   List<String> selectedBox = [];
+  List<String> submittedAnswer = [];
+  String newAns = '';
+  List<int> correctAnswerList = [];
 
   List<List<Position>> position = [];
   List<List<Offset>> positionCenter = [];
   Offset? lastUpdateLocation;
 
-  final List<String> wl = ['hello', 'world', 'fool', 'bar', 'kids', 'dart'];
+  final List<String> wl = ['morning', 'world', 'fool', 'bar', 'kids', 'dart'];
 
   // List<DrawingArea>? points = [];
   List<DrawingPoints> points = [];
+  List<List<DrawingPoints>> pointsArray = [];
   Color selectedColor = Colors.black;
   double strokeWidth = 25;
   bool puzzleDone = false;
@@ -41,11 +47,22 @@ class _HeroPageState extends State<HeroPage> {
   Offset? currentPoint;
   Offset? startSquireCenterPoint;
   Offset? endSquireCenterPoint;
+  Offset? aOffset;
+
+  List<Widget> items = [];
 
   @override
   void initState() {
     super.initState();
     makePuzzle(puzzleHW, wl);
+    addItem();
+    getColor();
+  }
+
+  addItem() {
+    setState(() {
+      addInItems(wl, correctAnswerList);
+    });
   }
 
   @override
@@ -59,6 +76,8 @@ class _HeroPageState extends State<HeroPage> {
     double extraHeight = displayH - displayW;
     double puzzleEndH = displayH - MediaQuery.of(context).padding.top;
 
+    int num = 0;
+
     if (!puzzleDone) {
       makePosition(puzzleHW, displayH, displayW, extraHeight);
     }
@@ -68,8 +87,20 @@ class _HeroPageState extends State<HeroPage> {
     return Scaffold(
       body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Container(
+              child: Expanded(
+                child: Wrap(
+                  children: items,
+                ),
+              ),
+            ),
+            Spacer(),
+            Text(
+              answer,
+              style: TextStyle(fontSize: 32),
+            ),
             Spacer(),
             TextButton(
               onPressed: () {
@@ -79,35 +110,6 @@ class _HeroPageState extends State<HeroPage> {
                 });
               },
               child: Text('reset'),
-            ),
-            Row(
-              children: [
-                Container(
-                  height: 10,
-                  width: displayW / 5,
-                  color: Colors.red,
-                ),
-                Container(
-                  height: 10,
-                  width: displayW / 5,
-                  color: Colors.blue,
-                ),
-                Container(
-                  height: 10,
-                  width: displayW / 5,
-                  color: Colors.black,
-                ),
-                Container(
-                  height: 10,
-                  width: displayW / 5,
-                  color: Colors.green,
-                ),
-                Container(
-                  height: 10,
-                  width: displayW / 5,
-                  color: Colors.red,
-                ),
-              ],
             ),
             ClipRRect(
               child: Container(
@@ -189,25 +191,61 @@ class _HeroPageState extends State<HeroPage> {
                             details.localPosition,
                           );
 
-                          getCenterPosition(Offset(currentPoint!.dx, currentPoint!.dy+extraHeight), 'update');
+                          getCenterPosition(
+                              Offset(currentPoint!.dx,
+                                  currentPoint!.dy + extraHeight),
+                              'update');
 
-                          /*if (startPoint!.dx + currentPoint!.dy >
-                              startPoint!.dy - currentPoint!.dx) {*/
-                            points.add(
-                              DrawingPoints(
-                                  points: renderBox.globalToLocal(
-                                    Offset(
-                                      endSquireCenterPoint!.dx,
-                                      endSquireCenterPoint!.dy-extraHeight,
+                          bool goLeft=true;
+                          bool goTop=true;
+                          if(startPoint!.dx  > currentPoint!.dx){
+                            goLeft=true;
+                          } else {
+                            goLeft=false;
+                          }
+                          if(startPoint!.dy  > currentPoint!.dy){
+                            goTop=true;
+                          } else {
+                            goTop=false;
+                          }
+
+                          if (goLeft) {
+                            if (aOffset != endSquireCenterPoint &&
+                                !points.contains(DrawingPoints(
+                                    points: renderBox.globalToLocal(
+                                      Offset(
+                                        endSquireCenterPoint!.dx,
+                                        endSquireCenterPoint!.dy - extraHeight,
+                                      ),
                                     ),
-                                  ),
-                                  paint: Paint()
-                                    ..strokeCap = StrokeCap.round
-                                    ..isAntiAlias = true
-                                    ..color = selectedColor.withOpacity(0.2)
-                                    ..strokeWidth = strokeWidth),
-                            );
-                          // }
+                                    paint: Paint()
+                                      ..strokeCap = StrokeCap.round
+                                      ..isAntiAlias = true
+                                      ..color = selectedColor.withOpacity(0.35)
+                                      ..strokeWidth = strokeWidth))) {
+                              getSelectedWordPosition(
+                                Offset(
+                                  endSquireCenterPoint!.dx,
+                                  endSquireCenterPoint!.dy,
+                                ),
+                              );
+                              aOffset = endSquireCenterPoint!;
+                              points.add(
+                                DrawingPoints(
+                                    points: renderBox.globalToLocal(
+                                      Offset(
+                                        endSquireCenterPoint!.dx,
+                                        endSquireCenterPoint!.dy - extraHeight,
+                                      ),
+                                    ),
+                                    paint: Paint()
+                                      ..strokeCap = StrokeCap.round
+                                      ..isAntiAlias = false
+                                      ..color = selectedColor.withOpacity(0.35)
+                                      ..strokeWidth = strokeWidth),
+                              );
+                            }
+                          }
                         });
                       },
                       onPanEnd: (details) {
@@ -219,17 +257,24 @@ class _HeroPageState extends State<HeroPage> {
                               points: renderBox.globalToLocal(
                                 Offset(
                                   endSquireCenterPoint!.dx,
-                                  endSquireCenterPoint!.dy-extraHeight,
+                                  endSquireCenterPoint!.dy - extraHeight,
                                 ),
                               ),
                               paint: Paint()
                                 ..strokeCap = StrokeCap.round
-                                ..isAntiAlias = true
-                                ..color = selectedColor.withOpacity(0.2)
+                                ..isAntiAlias = false
+                                ..color = selectedColor.withOpacity(0)
                                 ..strokeWidth = 0,
                             ),
                           );
+                          print('length p ${points.length}');
+                          print(
+                              'length 0p ${points.where((element) => element.paint!.strokeWidth != 0).length}');
                         });
+                        getColor();
+                        if (answer != '') {
+                          deletePaint(answer.length);
+                        }
                       },
                       onPanStart: (details) {
                         setState(() {
@@ -239,7 +284,10 @@ class _HeroPageState extends State<HeroPage> {
                           startPoint = renderBox.globalToLocal(
                             details.localPosition,
                           );
-                          getCenterPosition(Offset(startPoint!.dx, currentPoint!.dy+extraHeight), 'start');
+                          getCenterPosition(
+                              Offset(startPoint!.dx,
+                                  currentPoint!.dy + extraHeight),
+                              'start');
                         });
                       },
                       child: CustomPaint(
@@ -274,7 +322,6 @@ class _HeroPageState extends State<HeroPage> {
     final WSNewPuzzle newPuzzle = wordSearch.newPuzzle(puzzleStringList, ws);
 
     if (newPuzzle.errors.isEmpty) {
-      // The puzzle output
       print(newPuzzle.toString().replaceAll(' ', ''));
 
       print(newPuzzle.puzzle!);
@@ -283,10 +330,8 @@ class _HeroPageState extends State<HeroPage> {
         modText = newPuzzle.puzzle!;
       });
 
-      // Solve puzzle for given word list
       final WSSolved solved =
           wordSearch.solvePuzzle(newPuzzle.puzzle!, ['dart', 'word']);
-      // All found words by solving the puzzle
       solved.found.forEach((element) {
         print('word: ${element.word}, orientation: ${element.orientation}');
         print('x:${element.x}, y:${element.y}');
@@ -379,19 +424,91 @@ class _HeroPageState extends State<HeroPage> {
             position[a][b].leftB!.dy > start.dy &&
             position[a][b].rightT!.dy < start.dy &&
             position[a][b].rightB!.dy > start.dy) {
-          print('$a $b');
           setState(() {
-            if(m=='start') {
+            if (m == 'start') {
               print('start');
-              startSquireCenterPoint=positionCenter[a][b];
+              startSquireCenterPoint = positionCenter[a][b];
             } else {
-              endSquireCenterPoint=positionCenter[a][b];
+              endSquireCenterPoint = positionCenter[a][b];
             }
-            print('$a $b');
+            // print('$a $b'); //todo
           });
         }
       }
     }
+  }
+
+  void getSelectedWordPosition(Offset offset) {
+    for (int a = 0; a != position.length; a++) {
+      final index =
+          positionCenter[a].indexWhere((element) => element == offset);
+      if (index >= 0) {
+        // print('Using indexWhere: $a $index');
+        setState(() {
+          answer = answer + modText[a][index];
+          print(answer);
+        });
+      }
+    }
+  }
+
+  void deletePaint(int length) {
+    setState(() {
+      if (wl.contains(answer)) {
+        final index = wl.indexWhere((element) => element == answer);
+        if (!correctAnswerList.contains(index)) {
+          correctAnswerList.add(index);
+          addInItems(wl, correctAnswerList);
+        }
+      } else {
+        for (int a = -1; a != length; a++) {
+          points.removeLast();
+        }
+      }
+      answer = '';
+    });
+  }
+
+  void addInItems(List<String> list, List<int> correctAnswers) {
+    items = [];
+    for (int a = 0; a != list.length; a++) {
+      items.add(
+        Padding(
+          padding: const EdgeInsets.only(right: 15, bottom: 10),
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(
+                  color: correctAnswers.contains(a)
+                      ? Colors.black12
+                      : Colors.black,
+                ),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(1000),
+                )),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 5,
+                horizontal: 15,
+              ),
+              child: Text(
+                list[a].toUpperCase(),
+                style: TextStyle(
+                  color: correctAnswers.contains(a)
+                      ? Colors.black12
+                      : Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  void getColor() {
+    setState(() {
+      selectedColor = Color((math.Random().nextDouble() * 0xFFFFFF).toInt());
+    });
   }
 }
 
