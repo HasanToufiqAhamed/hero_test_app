@@ -1,16 +1,8 @@
-# hero_test_app
+# noob_word_search_game
+**N:B: Diagonally not working perfectly**
 
-A new Flutter project.
+A Flutter project, for one of my job interview task.
 
-## Getting Started
+## Screenshots
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![Screenshot](https://user-images.githubusercontent.com/37112730/147399411-afa563d8-5f16-413d-b9f5-13ddf9e0b9a1.jpeg)
